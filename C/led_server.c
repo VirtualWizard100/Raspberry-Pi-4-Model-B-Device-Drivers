@@ -97,7 +97,7 @@ void led_flash(SOCKET client_socket) {
 
 	char *message = "LED is flashing\n";
 
-        send(client_socket, message, strlen(message), 0);
+    send(client_socket, message, strlen(message), 0);
 
 	pthread_detach(thread_id);
 };
