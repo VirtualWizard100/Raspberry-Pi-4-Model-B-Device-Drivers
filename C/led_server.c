@@ -55,8 +55,6 @@ void led_off(SOCKET client_socket) {
 
 };
 
-pthread_mutex_t mutex;
-
 unsigned int flash_toggle = 0;
 
 void *flash_logic() {
