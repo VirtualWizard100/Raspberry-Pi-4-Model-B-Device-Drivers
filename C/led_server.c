@@ -2,12 +2,12 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/mman.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <string.h>
 #include <ctype.h>
 #include <pthread.h>
