@@ -11,6 +11,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <pthread.h>
+#include <signal.h>
+#include <setjmp.h>
 
 #define SOCKET int
 
@@ -67,12 +69,12 @@ void *flash_logic() {
 
 		*(gpio_ptr + (GPIO0_SET/4)) |= 0x1;
 
-		for (int i = 0; i < 10000000; i++) {
+		for (int i = 0; i < 15000000; i++) {
 		};
 
 		*(gpio_ptr + (GPIO0_CLR/4)) |= 0x1;
 
-		for (int i = 0; i < 10000000; i++) {
+		for (int i = 0; i < 15000000; i++) {
 		};
 	};
 
@@ -93,9 +95,9 @@ void led_flash(SOCKET client_socket) {
 
 	pthread_create(&thread_id, NULL, flash_logic, NULL);
 
-	char *message = "LED is flashing\n";
+ 	char *message = "LED is flashing\n";
 
-    send(client_socket, message, strlen(message), 0);
+        send(client_socket, message, strlen(message), 0);
 
 	pthread_detach(thread_id);
 };
@@ -144,7 +146,24 @@ void help(SOCKET client_socket) {
 
 };
 
+sigjmp_buf point;
+
+void ctrl_c_handler() {
+	siglongjmp(point, 1);	//The 1 in siglongjmp tells sigsetjmp to return 1 when the instruction pointer jumps back to it via the instruction address stored in point
+};
+
 int main() {
+
+	signal(SIGINT, ctrl_c_handler);
+
+	/* If sigsetjmp is being initially called, then it's going to store the address that it's at in the point buffer,
+	and return 0, the 1 saves the current signal mask, so tht way when siglongjmp is called, it overwrites the current
+	signal mask back to the state it was before ctrl_c_handler was called so that way it can set SIGINT back to unblocked,
+	otherwise since ctrl_c_handler never truly returned, then the cpu would still have sigint set to blocked, and you wouldn't
+	be able to use it again in the program until it was set back to unblocked */
+	if (sigsetjmp(point, 1) != 0) {	//If sigsetjmp isn't being initialized, then it's going to return 1 because it's being jumped back to through the instruction address stored in point through the siglongjmp function in ctrl_c_handler
+		goto end;
+	};
 
 	int fd = open("/dev/mem", O_RDWR|O_DSYNC);
 
