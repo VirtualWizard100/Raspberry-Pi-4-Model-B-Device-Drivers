@@ -57,7 +57,6 @@ OutputEnable:
         b errexit
 
 Flash:
-//      ldr x0, [x10,
         eor x1, x1, x1
         mov x1, #1
         str w1, [x10, GPIO0_SET]
